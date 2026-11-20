@@ -1,14 +1,29 @@
 import AVFoundation
 import SwiftUI
 
+struct TBBuiltInSound: Identifiable {
+    let id: String
+    let label: String
+}
+
 enum TBSound {
-    /// Eigener, im Programm enthaltener Ton (bei "Ende": Gong)
-    static let builtIn = "Timeboxer"
+    /// Eigene, im Programm enthaltene Töne: id = Name des Assets
+    static let builtIn = [
+        TBBuiltInSound(id: "gong-tief", label: "Gong tief"),
+        TBBuiltInSound(id: "gong-mittel", label: "Gong mittel"),
+        TBBuiltInSound(id: "gong-hell", label: "Gong hell"),
+        TBBuiltInSound(id: "klangschale", label: "Klangschale"),
+        TBBuiltInSound(id: "aufstieg", label: "Aufstieg"),
+        TBBuiltInSound(id: "abstieg", label: "Abstieg"),
+        TBBuiltInSound(id: "doppelton", label: "Doppelton"),
+    ]
     /// Dateinamen in /System/Library/Sounds (in den Systemeinstellungen teils anders benannt, z. B. Glass = Crystal)
     static let system = [
         "Basso", "Blow", "Bottle", "Frog", "Funk", "Glass", "Hero",
         "Morse", "Ping", "Pop", "Purr", "Sosumi", "Submarine", "Tink",
     ]
+    /// Frühere Versionen speicherten "Timeboxer" als Auswahl; das wird auf den Standard des Ereignisses abgebildet.
+    static let legacy = "Timeboxer"
 }
 
 /// Ereignisse, für die ein Ton gewählt werden kann
@@ -24,23 +39,23 @@ enum TBSlot: String, CaseIterable {
         }
     }
 
-    var assetName: String {
+    var defaultSound: String {
         switch self {
-        case .work: return "work"
-        case .rest: return "rest"
-        case .post: return "post"
-        case .end: return "gong"
+        case .work: return "gong-mittel"
+        case .rest: return "abstieg"
+        case .post: return "doppelton"
+        case .end: return "klangschale"
         }
     }
 }
 
 class TBPlayer: ObservableObject {
-    private var builtIn: [TBSlot: AVAudioPlayer] = [:]
+    private var builtIn: [String: AVAudioPlayer] = [:]
 
-    @AppStorage("soundWork") var soundWork = TBSound.builtIn
-    @AppStorage("soundRest") var soundRest = TBSound.builtIn
-    @AppStorage("soundPost") var soundPost = TBSound.builtIn
-    @AppStorage("soundEnd") var soundEnd = TBSound.builtIn
+    @AppStorage("soundWork") var soundWork = TBSlot.work.defaultSound
+    @AppStorage("soundRest") var soundRest = TBSlot.rest.defaultSound
+    @AppStorage("soundPost") var soundPost = TBSlot.post.defaultSound
+    @AppStorage("soundEnd") var soundEnd = TBSlot.end.defaultSound
 
     @AppStorage("volume") var volume: Double = 1.0 {
         didSet {
@@ -51,11 +66,14 @@ class TBPlayer: ObservableObject {
     }
 
     init() {
-        for slot in TBSlot.allCases {
-            builtIn[slot] = TBPlayer.load(slot.assetName)
+        for sound in TBSound.builtIn {
+            builtIn[sound.id] = TBPlayer.load(sound.id)
         }
         for player in builtIn.values {
             player.setVolume(Float(volume), fadeDuration: 0)
+        }
+        for slot in TBSlot.allCases where choice(for: slot) == TBSound.legacy {
+            set(slot.defaultSound, for: slot)
         }
     }
 
@@ -81,17 +99,32 @@ class TBPlayer: ObservableObject {
         }
     }
 
+    private func set(_ value: String, for slot: TBSlot) {
+        switch slot {
+        case .work: soundWork = value
+        case .rest: soundRest = value
+        case .post: soundPost = value
+        case .end: soundEnd = value
+        }
+    }
+
     func play(_ slot: TBSlot) {
         let name = choice(for: slot)
-        /* Systemton; fehlt er, spielt der eigene Ton, damit nie Stille herrscht */
-        if name != TBSound.builtIn, let sound = NSSound(named: NSSound.Name(name)) {
+        if let player = builtIn[name] {
+            restart(player)
+        } else if let sound = NSSound(named: NSSound.Name(name)) {
             sound.stop()
             sound.volume = Float(volume)
             sound.play()
-            return
+        } else if let player = builtIn[slot.defaultSound] {
+            /* Systemton nicht gefunden: Standardton, damit nie Stille herrscht */
+            restart(player)
         }
-        guard let player = builtIn[slot] else {
-            return
+    }
+
+    private func restart(_ player: AVAudioPlayer) {
+        for other in builtIn.values where other.isPlaying && other !== player {
+            other.stop()
         }
         player.currentTime = 0
         player.play()

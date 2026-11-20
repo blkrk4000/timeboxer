@@ -21,7 +21,7 @@ Beispiele: `15A 5P 15A 5N`, `18A 5P 15A 5N`, `40A 3N`. Trenner sind Leerzeichen,
 Pro Abschnitt gibt es einen Ton (eigene Töne oder macOS-Systemtöne, in den Einstellungen wählbar) und eine Benachrichtigung am Anfang, am Ende der ganzen Sequenz einen Ton, standardmäßig ein Gong.
 Die Restzeit steht in der Menüleiste (`A 12:34`).
 
-Die eingebauten Töne sind synthetische Platzhalter. Lizenzfreie Samples sind geplant; bis dahin lassen sich die macOS-Systemtöne wählen.
+Die eingebauten Töne (vier Gongs/Klangschale, drei kurze Signaltöne) sind synthetische Platzhalter und für jedes Ereignis frei wählbar. Lizenzfreie Samples sind geplant; bis dahin lassen sich die macOS-Systemtöne wählen.
 
 ## Installation
 
