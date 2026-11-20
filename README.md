@@ -6,6 +6,8 @@ Entstanden für die Arbeitseinheiten (AE) nach Anna Höcker, „Heute fange ich 
 
 Basis: [TomatoBar](https://github.com/ivoronin/TomatoBar) von Ilya Voronin (MIT).
 
+Entwickelt mit [Claude](https://claude.ai) (Anthropic): Code, Build-Workflow und die eingebauten, synthetisch erzeugten Töne.
+
 ## Sequenz
 
 Eine Sequenz ist eine Liste aus `<Minuten><Typ>`:
@@ -18,10 +20,21 @@ Eine Sequenz ist eine Liste aus `<Minuten><Typ>`:
 
 Beispiele: `15A 5P 15A 5N`, `18A 5P 15A 5N`, `40A 3N`. Trenner sind Leerzeichen, Komma, `+` oder `-`.
 
-Pro Abschnitt gibt es einen Ton (eigene Töne oder macOS-Systemtöne, in den Einstellungen wählbar) und eine Benachrichtigung am Anfang, am Ende der ganzen Sequenz einen Ton, standardmäßig ein Gong.
+Jeder Abschnitt dauert 1 bis 240 Minuten, die Anzahl der Abschnitte ist nicht begrenzt.
+
+Am Anfang jedes Abschnitts gibt es einen Ton und eine Benachrichtigung, am Ende der ganzen Sequenz einen Schlusston.
 Die Restzeit steht in der Menüleiste (`A 12:34`).
 
-Die eingebauten Töne (vier Gongs/Klangschale, drei kurze Signaltöne) sind synthetische Platzhalter und für jedes Ereignis frei wählbar. Lizenzfreie Samples sind geplant; bis dahin lassen sich die macOS-Systemtöne wählen.
+## Töne
+
+Je Ereignis frei wählbar: sieben eingebaute Töne (Gong tief, Gong mittel, Gong hell, Klangschale, Aufstieg, Abstieg, Doppelton) oder die macOS-Systemtöne.
+
+| Ereignis | Standard |
+|---|---|
+| Arbeit | Gong tief |
+| Pause | Klangschale |
+| Nachbearbeitung | Gong mittel |
+| Ende | Aufstieg |
 
 ## Installation
 

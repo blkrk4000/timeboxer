@@ -41,10 +41,10 @@ enum TBSlot: String, CaseIterable {
 
     var defaultSound: String {
         switch self {
-        case .work: return "gong-mittel"
-        case .rest: return "abstieg"
-        case .post: return "doppelton"
-        case .end: return "klangschale"
+        case .work: return "gong-tief"
+        case .rest: return "klangschale"
+        case .post: return "gong-mittel"
+        case .end: return "aufstieg"
         }
     }
 }
