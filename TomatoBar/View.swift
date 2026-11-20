@@ -6,13 +6,44 @@ extension KeyboardShortcuts.Name {
     static let startStopTimer = Self("startStopTimer")
 }
 
-private struct VolumeRow: View {
+private struct SoundRow: View {
+    let slot: TBSlot
+    @Binding var selection: String
     @EnvironmentObject var player: TBPlayer
 
     var body: some View {
         HStack {
-            Text("Lautstärke")
-            Slider(value: $player.volume, in: 0...1)
+            Text(slot.label)
+            Spacer()
+            Picker("", selection: $selection) {
+                Text(slot == .end ? "Applaus (Timeboxer)" : "Timeboxer").tag(TBSound.builtIn)
+                ForEach(TBSound.system, id: \.self) { name in
+                    Text(name).tag(name)
+                }
+            }
+            .labelsHidden()
+            .frame(width: 180)
+            .help("Ton für \"\(slot.label)\" – Auswahl wird zur Probe abgespielt")
+            .onChange(of: selection) { _ in
+                player.play(slot)
+            }
+        }
+    }
+}
+
+private struct SoundsView: View {
+    @EnvironmentObject var player: TBPlayer
+
+    var body: some View {
+        VStack(spacing: 4) {
+            SoundRow(slot: .work, selection: $player.soundWork)
+            SoundRow(slot: .rest, selection: $player.soundRest)
+            SoundRow(slot: .post, selection: $player.soundPost)
+            SoundRow(slot: .end, selection: $player.soundEnd)
+            HStack {
+                Text("Lautstärke")
+                Slider(value: $player.volume, in: 0...1)
+            }
         }
     }
 }
@@ -81,8 +112,9 @@ struct TBPopoverView: View {
 
             GroupBox {
                 VStack(alignment: .leading, spacing: 4) {
-                    Text("Sequenz (A Arbeit, P Pause, N Nachbearbeitung)")
+                    Text("A Arbeit · P Pause · N Nachbearbeitung")
                         .font(.caption)
+                        .lineLimit(1)
                         .foregroundColor(.secondary)
                     TextField("15A 5P 15A 5N", text: $timer.sequenceText)
                         .textFieldStyle(.roundedBorder)
@@ -98,17 +130,20 @@ struct TBPopoverView: View {
                         Text("Tastenkürzel Start/Stopp")
                             .frame(maxWidth: .infinity, alignment: .leading)
                     }
+                    .help("Globales Tastenkürzel zum Starten und Stoppen")
                     Toggle(isOn: $timer.showTimerInMenuBar) {
                         Text("Zeit in der Menüleiste")
                             .frame(maxWidth: .infinity, alignment: .leading)
                     }.toggleStyle(.switch)
+                        .help("Restzeit als Text neben dem Symbol anzeigen")
                         .onChange(of: timer.showTimerInMenuBar) { _ in
                             timer.updateTimeLeft()
                         }
                     Toggle(isOn: $timer.hideIconWhileRunning) {
-                        Text("Symbol bei laufendem Timer ausblenden")
+                        Text("Symbol ausblenden beim Laufen")
                             .frame(maxWidth: .infinity, alignment: .leading)
                     }.toggleStyle(.switch)
+                        .help("Blendet das Tomaten-Symbol aus, solange der Timer läuft (spart Platz in der Menüleiste)")
                         .onChange(of: timer.hideIconWhileRunning) { _ in
                             timer.updateTimeLeft()
                         }
@@ -116,9 +151,13 @@ struct TBPopoverView: View {
                         Text("Beim Anmelden starten")
                             .frame(maxWidth: .infinity, alignment: .leading)
                     }.toggleStyle(.switch)
-                    VolumeRow().environmentObject(timer.player)
                 }
                 .padding(4)
+            }
+
+            GroupBox {
+                SoundsView().environmentObject(timer.player)
+                    .padding(4)
             }
 
             Group {

@@ -15,6 +15,14 @@ enum TBKind: Character {
         }
     }
 
+    var slot: TBSlot {
+        switch self {
+        case .work: return .work
+        case .rest: return .rest
+        case .post: return .post
+        }
+    }
+
     var icon: NSImage.Name {
         switch self {
         case .work: return .work
@@ -160,7 +168,7 @@ class TBTimer: ObservableObject {
         finishTime = Date().addingTimeInterval(TimeInterval(segment.minutes * 60))
         currentIcon = segment.kind.icon
         isPaused = false
-        player.play(segment.kind)
+        player.play(segment.kind.slot)
         notificationCenter.send(
             title: segment.kind.title,
             body: "\(segment.minutes) min (\(index + 1)/\(segments.count))"
@@ -183,7 +191,7 @@ class TBTimer: ObservableObject {
     private func finish() {
         stopTicker()
         resetUI()
-        player.playApplause()
+        player.play(.end)
         notificationCenter.send(title: "Fertig", body: "Timebox abgeschlossen")
     }
 

@@ -16,7 +16,7 @@ Eine Sequenz ist eine Liste aus `<Minuten><Typ>`:
 
 Beispiele: `15A 5P 15A 5N`, `18A 5P 15A 5N`, `40A 3N`. Trenner sind Leerzeichen, Komma, `+` oder `-`.
 
-Pro Abschnitt gibt es einen eigenen Ton und eine Benachrichtigung am Anfang, am Ende der ganzen Sequenz einen Applaus.
+Pro Abschnitt gibt es einen Ton (eigene Töne oder macOS-Systemtöne, in den Einstellungen wählbar) und eine Benachrichtigung am Anfang, am Ende der ganzen Sequenz einen Ton, standardmäßig Applaus.
 Die Restzeit steht in der Menüleiste (`A 12:34`).
 
 ## Installation
