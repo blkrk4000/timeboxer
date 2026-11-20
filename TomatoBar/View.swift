@@ -6,136 +6,36 @@ extension KeyboardShortcuts.Name {
     static let startStopTimer = Self("startStopTimer")
 }
 
-private struct IntervalsView: View {
-    @EnvironmentObject var timer: TBTimer
-    private var minStr = NSLocalizedString("IntervalsView.min", comment: "min")
-
-    var body: some View {
-        VStack {
-            Stepper(value: $timer.workIntervalLength, in: 1 ... 60) {
-                HStack {
-                    Text(NSLocalizedString("IntervalsView.workIntervalLength.label",
-                                           comment: "Work interval label"))
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                    Text(String.localizedStringWithFormat(minStr, timer.workIntervalLength))
-                }
-            }
-            Stepper(value: $timer.shortRestIntervalLength, in: 1 ... 60) {
-                HStack {
-                    Text(NSLocalizedString("IntervalsView.shortRestIntervalLength.label",
-                                           comment: "Short rest interval label"))
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                    Text(String.localizedStringWithFormat(minStr, timer.shortRestIntervalLength))
-                }
-            }
-            Stepper(value: $timer.longRestIntervalLength, in: 1 ... 60) {
-                HStack {
-                    Text(NSLocalizedString("IntervalsView.longRestIntervalLength.label",
-                                           comment: "Long rest interval label"))
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                    Text(String.localizedStringWithFormat(minStr, timer.longRestIntervalLength))
-                }
-            }
-            .help(NSLocalizedString("IntervalsView.longRestIntervalLength.help",
-                                    comment: "Long rest interval hint"))
-            Stepper(value: $timer.workIntervalsInSet, in: 1 ... 10) {
-                HStack {
-                    Text(NSLocalizedString("IntervalsView.workIntervalsInSet.label",
-                                           comment: "Work intervals in a set label"))
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                    Text("\(timer.workIntervalsInSet)")
-                }
-            }
-            .help(NSLocalizedString("IntervalsView.workIntervalsInSet.help",
-                                    comment: "Work intervals in set hint"))
-            Spacer().frame(minHeight: 0)
-        }
-        .padding(4)
-    }
-}
-
-private struct SettingsView: View {
-    @EnvironmentObject var timer: TBTimer
-    @ObservedObject private var launchAtLogin = LaunchAtLogin.observable
-
-    var body: some View {
-        VStack {
-            KeyboardShortcuts.Recorder(for: .startStopTimer) {
-                Text(NSLocalizedString("SettingsView.shortcut.label",
-                                       comment: "Shortcut label"))
-                    .frame(maxWidth: .infinity, alignment: .leading)
-            }
-            Toggle(isOn: $timer.stopAfterBreak) {
-                Text(NSLocalizedString("SettingsView.stopAfterBreak.label",
-                                       comment: "Stop after break label"))
-                    .frame(maxWidth: .infinity, alignment: .leading)
-            }.toggleStyle(.switch)
-            Toggle(isOn: $timer.showTimerInMenuBar) {
-                Text(NSLocalizedString("SettingsView.showTimerInMenuBar.label",
-                                       comment: "Show timer in menu bar label"))
-                    .frame(maxWidth: .infinity, alignment: .leading)
-            }.toggleStyle(.switch)
-                .onChange(of: timer.showTimerInMenuBar) { _ in
-                    timer.updateTimeLeft()
-                }
-            Toggle(isOn: $launchAtLogin.isEnabled) {
-                Text(NSLocalizedString("SettingsView.launchAtLogin.label",
-                                       comment: "Launch at login label"))
-                    .frame(maxWidth: .infinity, alignment: .leading)
-            }.toggleStyle(.switch)
-            Spacer().frame(minHeight: 0)
-        }
-        .padding(4)
-    }
-}
-
-private struct VolumeSlider: View {
-    @Binding var volume: Double
-
-    var body: some View {
-        Slider(value: $volume, in: 0...2) {
-            Text(String(format: "%.1f", volume))
-        }.gesture(TapGesture(count: 2).onEnded({
-            volume = 1.0
-        }))
-    }
-}
-
-private struct SoundsView: View {
+private struct VolumeRow: View {
     @EnvironmentObject var player: TBPlayer
 
-    private var columns = [
-        GridItem(.flexible()),
-        GridItem(.fixed(110))
-    ]
-
     var body: some View {
-        LazyVGrid(columns: columns, alignment: .leading, spacing: 4) {
-            Text(NSLocalizedString("SoundsView.isWindupEnabled.label",
-                                   comment: "Windup label"))
-            VolumeSlider(volume: $player.windupVolume)
-            Text(NSLocalizedString("SoundsView.isDingEnabled.label",
-                                   comment: "Ding label"))
-            VolumeSlider(volume: $player.dingVolume)
-            Text(NSLocalizedString("SoundsView.isTickingEnabled.label",
-                                   comment: "Ticking label"))
-            VolumeSlider(volume: $player.tickingVolume)
-        }.padding(4)
-        Spacer().frame(minHeight: 0)
+        HStack {
+            Text("Lautstärke")
+            Slider(value: $player.volume, in: 0...1)
+        }
     }
-}
-
-private enum ChildView {
-    case intervals, settings, sounds
 }
 
 struct TBPopoverView: View {
     @ObservedObject var timer = TBTimer()
+    @ObservedObject private var launchAtLogin = LaunchAtLogin.observable
     @State private var buttonHovered = false
-    @State private var activeChildView = ChildView.intervals
 
-    private var startLabel = NSLocalizedString("TBPopoverView.start.label", comment: "Start label")
-    private var stopLabel = NSLocalizedString("TBPopoverView.stop.label", comment: "Stop label")
+    private var segments: [TBSegment]? {
+        TBSequence.parse(timer.sequenceText)
+    }
+
+    /// Eine feste Zeile unter dem Eingabefeld: Summe oder Fehlerhinweis (Höhe bleibt konstant).
+    private var hint: Text {
+        if let segments = segments {
+            let total = segments.reduce(0) { $0 + $1.minutes }
+            return Text("Gesamt: \(total) min · \(segments.count) Abschnitte")
+                .foregroundColor(.secondary)
+        }
+        return Text("Ungültig – Beispiel: 18A 5P 15A 5N")
+            .foregroundColor(.red)
+    }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
@@ -144,8 +44,8 @@ struct TBPopoverView: View {
                 TBStatusItem.shared.closePopover(nil)
             } label: {
                 Text(timer.timer != nil ?
-                     (buttonHovered ? stopLabel : timer.timeLeftString) :
-                        startLabel)
+                     (buttonHovered ? "Stopp" : timer.timeLeftString) :
+                        "Start")
                     /*
                       When appearance is set to "Dark" and accent color is set to "Graphite"
                       "defaultAction" button label's color is set to the same color as the
@@ -160,28 +60,49 @@ struct TBPopoverView: View {
             }
             .controlSize(.large)
             .keyboardShortcut(.defaultAction)
+            .disabled(timer.timer == nil && segments == nil)
 
-            Picker("", selection: $activeChildView) {
-                Text(NSLocalizedString("TBPopoverView.intervals.label",
-                                       comment: "Intervals label")).tag(ChildView.intervals)
-                Text(NSLocalizedString("TBPopoverView.settings.label",
-                                       comment: "Settings label")).tag(ChildView.settings)
-                Text(NSLocalizedString("TBPopoverView.sounds.label",
-                                       comment: "Sounds label")).tag(ChildView.sounds)
+            Button {
+                timer.skip()
+            } label: {
+                Text("Weiter zum nächsten Abschnitt")
+                    .frame(maxWidth: .infinity)
             }
-            .labelsHidden()
-            .frame(maxWidth: .infinity)
-            .pickerStyle(.segmented)
+            .disabled(timer.timer == nil)
 
             GroupBox {
-                switch activeChildView {
-                case .intervals:
-                    IntervalsView().environmentObject(timer)
-                case .settings:
-                    SettingsView().environmentObject(timer)
-                case .sounds:
-                    SoundsView().environmentObject(timer.player)
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Sequenz (A Arbeit, P Pause, N Nachbearbeitung)")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                    TextField("15A 5P 15A 5N", text: $timer.sequenceText)
+                        .textFieldStyle(.roundedBorder)
+                        .disabled(timer.timer != nil)
+                    hint.font(.caption)
                 }
+                .padding(4)
+            }
+
+            GroupBox {
+                VStack {
+                    KeyboardShortcuts.Recorder(for: .startStopTimer) {
+                        Text("Tastenkürzel Start/Stopp")
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                    }
+                    Toggle(isOn: $timer.showTimerInMenuBar) {
+                        Text("Zeit in der Menüleiste")
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                    }.toggleStyle(.switch)
+                        .onChange(of: timer.showTimerInMenuBar) { _ in
+                            timer.updateTimeLeft()
+                        }
+                    Toggle(isOn: $launchAtLogin.isEnabled) {
+                        Text("Beim Anmelden starten")
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                    }.toggleStyle(.switch)
+                    VolumeRow().environmentObject(timer.player)
+                }
+                .padding(4)
             }
 
             Group {
@@ -189,8 +110,7 @@ struct TBPopoverView: View {
                     NSApp.activate(ignoringOtherApps: true)
                     NSApp.orderFrontStandardAboutPanel()
                 } label: {
-                    Text(NSLocalizedString("TBPopoverView.about.label",
-                                           comment: "About label"))
+                    Text("Über Timeboxer")
                     Spacer()
                     Text("⌘ A").foregroundColor(Color.gray)
                 }
@@ -199,8 +119,7 @@ struct TBPopoverView: View {
                 Button {
                     NSApplication.shared.terminate(self)
                 } label: {
-                    Text(NSLocalizedString("TBPopoverView.quit.label",
-                                           comment: "Quit label"))
+                    Text("Beenden")
                     Spacer()
                     Text("⌘ Q").foregroundColor(Color.gray)
                 }
@@ -208,29 +127,6 @@ struct TBPopoverView: View {
                 .keyboardShortcut("q")
             }
         }
-        #if DEBUG
-            /*
-             After several hours of Googling and trying various StackOverflow
-             recipes I still haven't figured a reliable way to auto resize
-             popover to fit all it's contents (pull requests are welcome!).
-             The following code block is used to determine the optimal
-             geometry of the popover.
-             */
-            .overlay(
-                GeometryReader { proxy in
-                    debugSize(proxy: proxy)
-                }
-            )
-        #endif
-            /* Use values from GeometryReader */
-//            .frame(width: 240, height: 276)
-            .padding(12)
+        .padding(12)
     }
 }
-
-#if DEBUG
-    func debugSize(proxy: GeometryProxy) -> some View {
-        print("Optimal popover size:", proxy.size)
-        return Color.clear
-    }
-#endif

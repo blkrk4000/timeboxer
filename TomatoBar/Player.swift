@@ -2,67 +2,60 @@ import AVFoundation
 import SwiftUI
 
 class TBPlayer: ObservableObject {
-    private var windupSound: AVAudioPlayer
-    private var dingSound: AVAudioPlayer
-    private var tickingSound: AVAudioPlayer
+    private var workSound: AVAudioPlayer
+    private var restSound: AVAudioPlayer
+    private var postSound: AVAudioPlayer
+    private var applauseSound: AVAudioPlayer
 
-    @AppStorage("windupVolume") var windupVolume: Double = 1.0 {
+    @AppStorage("volume") var volume: Double = 1.0 {
         didSet {
-            setVolume(windupSound, windupVolume)
+            applyVolume()
         }
-    }
-    @AppStorage("dingVolume") var dingVolume: Double = 1.0 {
-        didSet {
-            setVolume(dingSound, dingVolume)
-        }
-    }
-    @AppStorage("tickingVolume") var tickingVolume: Double = 1.0 {
-        didSet {
-            setVolume(tickingSound, tickingVolume)
-        }
-    }
-
-    private func setVolume(_ sound: AVAudioPlayer, _ volume: Double) {
-        sound.setVolume(Float(volume), fadeDuration: 0)
     }
 
     init() {
-        let windupSoundAsset = NSDataAsset(name: "windup")
-        let dingSoundAsset = NSDataAsset(name: "ding")
-        let tickingSoundAsset = NSDataAsset(name: "ticking")
+        workSound = TBPlayer.load("work")
+        restSound = TBPlayer.load("rest")
+        postSound = TBPlayer.load("post")
+        applauseSound = TBPlayer.load("applause")
+        applyVolume()
+    }
 
-        let wav = AVFileType.wav.rawValue
-        do {
-            windupSound = try AVAudioPlayer(data: windupSoundAsset!.data, fileTypeHint: wav)
-            dingSound = try AVAudioPlayer(data: dingSoundAsset!.data, fileTypeHint: wav)
-            tickingSound = try AVAudioPlayer(data: tickingSoundAsset!.data, fileTypeHint: wav)
-        } catch {
-            fatalError("Error initializing players: \(error)")
+    private static func load(_ name: String) -> AVAudioPlayer {
+        guard let asset = NSDataAsset(name: name) else {
+            fatalError("Missing sound asset: \(name)")
         }
-
-        windupSound.prepareToPlay()
-        dingSound.prepareToPlay()
-        tickingSound.numberOfLoops = -1
-        tickingSound.prepareToPlay()
-
-        setVolume(windupSound, windupVolume)
-        setVolume(dingSound, dingVolume)
-        setVolume(tickingSound, tickingVolume)
+        do {
+            let player = try AVAudioPlayer(data: asset.data, fileTypeHint: AVFileType.wav.rawValue)
+            player.prepareToPlay()
+            return player
+        } catch {
+            fatalError("Error initializing player \(name): \(error)")
+        }
     }
 
-    func playWindup() {
-        windupSound.play()
+    private func applyVolume() {
+        for sound in [workSound, restSound, postSound, applauseSound] {
+            sound.setVolume(Float(volume), fadeDuration: 0)
+        }
     }
 
-    func playDing() {
-        dingSound.play()
+    func play(_ kind: TBKind) {
+        let sound: AVAudioPlayer
+        switch kind {
+        case .work: sound = workSound
+        case .rest: sound = restSound
+        case .post: sound = postSound
+        }
+        restart(sound)
     }
 
-    func startTicking() {
-        tickingSound.play()
+    func playApplause() {
+        restart(applauseSound)
     }
 
-    func stopTicking() {
-        tickingSound.stop()
+    private func restart(_ sound: AVAudioPlayer) {
+        sound.currentTime = 0
+        sound.play()
     }
 }
