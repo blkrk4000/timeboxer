@@ -143,10 +143,10 @@ struct TBPopoverView: View {
                             timer.updateTimeLeft()
                         }
                     Toggle(isOn: $timer.hideIconWhileRunning) {
-                        Text("Symbol ausblenden beim Laufen")
+                        Text("Nur Zeit zeigen (ohne Symbol)")
                             .frame(maxWidth: .infinity, alignment: .leading)
                     }.toggleStyle(.switch)
-                        .help("Blendet das Tomaten-Symbol aus, solange der Timer läuft (spart Platz in der Menüleiste)")
+                        .help("Solange der Timer läuft, steht nur die Restzeit in der Menüleiste, das Läufer-Symbol wird ausgeblendet (spart Platz)")
                         .onChange(of: timer.hideIconWhileRunning) { _ in
                             timer.updateTimeLeft()
                         }
