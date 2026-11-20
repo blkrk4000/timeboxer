@@ -349,13 +349,13 @@
 				INFOPLIST_FILE = TomatoBar/Info.plist;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";
 				INFOPLIST_KEY_LSUIElement = YES;
-				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2023 Ilya Voronin. All rights reserved. https://github.com/ivoronin/TomatoBar";
+				INFOPLIST_KEY_NSHumanReadableCopyright = "Timeboxer, Fork von TomatoBar (© 2023 Ilya Voronin, MIT). https://github.com/blkrk4000/timeboxer";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 11.0;
-				MARKETING_VERSION = 0.1.0;
+				MARKETING_VERSION = 0.1.1;
 				PRODUCT_BUNDLE_IDENTIFIER = com.github.blkrk4000.Timeboxer;
 				PRODUCT_NAME = Timeboxer;
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -384,13 +384,13 @@
 				INFOPLIST_FILE = TomatoBar/Info.plist;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";
 				INFOPLIST_KEY_LSUIElement = YES;
-				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2023 Ilya Voronin. All rights reserved. https://github.com/ivoronin/TomatoBar";
+				INFOPLIST_KEY_NSHumanReadableCopyright = "Timeboxer, Fork von TomatoBar (© 2023 Ilya Voronin, MIT). https://github.com/blkrk4000/timeboxer";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 11.0;
-				MARKETING_VERSION = 0.1.0;
+				MARKETING_VERSION = 0.1.1;
 				PRODUCT_BUNDLE_IDENTIFIER = com.github.blkrk4000.Timeboxer;
 				PRODUCT_NAME = Timeboxer;
 				SWIFT_EMIT_LOC_STRINGS = YES;

@@ -28,7 +28,7 @@ Die Restzeit steht in der Menüleiste (`A 12:34`).
 
 ## URL-Schema
 
-`open timeboxer://startstop` und `open timeboxer://skip` (z. B. für Keyboard Maestro).
+`open timeboxer://startstop`, `timeboxer://pause` und `timeboxer://skip` (z. B. für Keyboard Maestro).
 
 ## Lizenz
 

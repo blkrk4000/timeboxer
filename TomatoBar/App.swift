@@ -44,7 +44,7 @@ class TBStatusItem: NSObject, NSApplicationDelegate {
             withLength: NSStatusItem.variableLength
         )
         statusBarItem?.button?.imagePosition = .imageLeft
-        setIcon(name: .idle)
+        setIcon(name: NSImage.Name.idle)
         statusBarItem?.button?.action = #selector(TBStatusItem.togglePopover(_:))
     }
 
@@ -54,7 +54,7 @@ class TBStatusItem: NSObject, NSApplicationDelegate {
         paragraphStyle.alignment = NSTextAlignment.center
 
         let attributedTitle = NSAttributedString(
-            string: title != nil ? " \(title!)" : "",
+            string: title != nil ? (statusBarItem?.button?.image != nil ? " " : "") + title! : "",
             attributes: [
                 NSAttributedString.Key.font: digitFont,
                 NSAttributedString.Key.paragraphStyle: paragraphStyle
@@ -63,8 +63,8 @@ class TBStatusItem: NSObject, NSApplicationDelegate {
         statusBarItem?.button?.attributedTitle = attributedTitle
     }
 
-    func setIcon(name: NSImage.Name) {
-        statusBarItem?.button?.image = NSImage(named: name)
+    func setIcon(name: NSImage.Name?) {
+        statusBarItem?.button?.image = name.flatMap { NSImage(named: $0) }
     }
 
     func showPopover(_: AnyObject?) {

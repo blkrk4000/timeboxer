@@ -54,6 +54,7 @@ enum TBSequence {
 class TBTimer: ObservableObject {
     @AppStorage("sequence") var sequenceText = "15A 5P 15A 5N"
     @AppStorage("showTimerInMenuBar") var showTimerInMenuBar = true
+    @AppStorage("hideIconWhileRunning") var hideIconWhileRunning = true
 
     public let player = TBPlayer()
     private var notificationCenter = TBNotificationCenter()
@@ -63,6 +64,9 @@ class TBTimer: ObservableObject {
     private var timerFormatter = DateComponentsFormatter()
     @Published var timeLeftString: String = ""
     @Published var timer: DispatchSourceTimer?
+    @Published var isPaused = false
+    private var remainingWhenPaused: TimeInterval = 0
+    private var currentIcon = NSImage.Name.idle
 
     /// Wird die Maschine im Ruhezustand nach Ablauf zu spät wach, bricht der Timer ab.
     private let overrunTimeLimit = -60.0
@@ -96,6 +100,8 @@ class TBTimer: ObservableObject {
             startStop()
         case "skip":
             skip()
+        case "pause":
+            togglePause()
         default:
             print("url handling error: unknown command \(host)")
         }
@@ -125,6 +131,20 @@ class TBTimer: ObservableObject {
         resetUI()
     }
 
+    func togglePause() {
+        guard timer != nil else {
+            return
+        }
+        if isPaused {
+            finishTime = Date().addingTimeInterval(remainingWhenPaused)
+            isPaused = false
+        } else {
+            remainingWhenPaused = max(0, finishTime.timeIntervalSinceNow)
+            isPaused = true
+        }
+        updateTimeLeft()
+    }
+
     /// Springt zum nächsten Abschnitt (am letzten Abschnitt: beendet die Sequenz).
     func skip() {
         guard timer != nil else {
@@ -138,7 +158,8 @@ class TBTimer: ObservableObject {
     private func beginSegment() {
         let segment = segments[index]
         finishTime = Date().addingTimeInterval(TimeInterval(segment.minutes * 60))
-        TBStatusItem.shared.setIcon(name: segment.kind.icon)
+        currentIcon = segment.kind.icon
+        isPaused = false
         player.play(segment.kind)
         notificationCenter.send(
             title: segment.kind.title,
@@ -167,7 +188,8 @@ class TBTimer: ObservableObject {
     }
 
     private func resetUI() {
-        TBStatusItem.shared.setIcon(name: .idle)
+        currentIcon = .idle
+        isPaused = false
         updateTimeLeft()
     }
 
@@ -193,7 +215,7 @@ class TBTimer: ObservableObject {
     }
 
     private func onTick() {
-        guard timer != nil else {
+        guard timer != nil, !isPaused else {
             return
         }
         let timeLeft = finishTime.timeIntervalSinceNow
@@ -209,14 +231,20 @@ class TBTimer: ObservableObject {
     }
 
     func updateTimeLeft() {
-        guard timer != nil, index < segments.count else {
+        let running = timer != nil && index < segments.count
+        /* Symbol nur ausblenden, wenn die Zeit stattdessen in der Menüleiste steht */
+        let hideIcon = running && hideIconWhileRunning && showTimerInMenuBar
+        TBStatusItem.shared.setIcon(name: hideIcon ? nil : currentIcon)
+        guard running else {
             timeLeftString = ""
             TBStatusItem.shared.setTitle(title: nil)
             return
         }
-        timeLeftString = timerFormatter.string(from: Date(), to: finishTime) ?? ""
+        let end = isPaused ? Date().addingTimeInterval(remainingWhenPaused) : finishTime
+        timeLeftString = timerFormatter.string(from: Date(), to: end) ?? ""
         if showTimerInMenuBar {
-            TBStatusItem.shared.setTitle(title: "\(segments[index].kind.rawValue) \(timeLeftString)")
+            let pause = isPaused ? "⏸ " : ""
+            TBStatusItem.shared.setTitle(title: "\(pause)\(segments[index].kind.rawValue) \(timeLeftString)")
         } else {
             TBStatusItem.shared.setTitle(title: nil)
         }

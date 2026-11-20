@@ -62,13 +62,22 @@ struct TBPopoverView: View {
             .keyboardShortcut(.defaultAction)
             .disabled(timer.timer == nil && segments == nil)
 
-            Button {
-                timer.skip()
-            } label: {
-                Text("Weiter zum nächsten Abschnitt")
-                    .frame(maxWidth: .infinity)
+            HStack {
+                Button {
+                    timer.togglePause()
+                } label: {
+                    Text(timer.isPaused ? "Fortsetzen" : "Pause")
+                        .frame(maxWidth: .infinity)
+                }
+                .disabled(timer.timer == nil)
+                Button {
+                    timer.skip()
+                } label: {
+                    Text("Weiter")
+                        .frame(maxWidth: .infinity)
+                }
+                .disabled(timer.timer == nil)
             }
-            .disabled(timer.timer == nil)
 
             GroupBox {
                 VStack(alignment: .leading, spacing: 4) {
@@ -94,6 +103,13 @@ struct TBPopoverView: View {
                             .frame(maxWidth: .infinity, alignment: .leading)
                     }.toggleStyle(.switch)
                         .onChange(of: timer.showTimerInMenuBar) { _ in
+                            timer.updateTimeLeft()
+                        }
+                    Toggle(isOn: $timer.hideIconWhileRunning) {
+                        Text("Symbol bei laufendem Timer ausblenden")
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                    }.toggleStyle(.switch)
+                        .onChange(of: timer.hideIconWhileRunning) { _ in
                             timer.updateTimeLeft()
                         }
                     Toggle(isOn: $launchAtLogin.isEnabled) {
