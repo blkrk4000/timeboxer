@@ -23,18 +23,7 @@ Beispiele: `15A 5P 15A 5N`, `18A 5P 15A 5N`, `40A 3N`. Trenner sind Leerzeichen,
 Jeder Abschnitt dauert 1 bis 240 Minuten, die Anzahl der Abschnitte ist nicht begrenzt.
 
 Am Anfang jedes Abschnitts gibt es einen Ton und eine Benachrichtigung, am Ende der ganzen Sequenz einen Schlusston.
-Die Restzeit steht in der Menüleiste (`A 12:34`).
-
-## Töne
-
-Je Ereignis frei wählbar: sieben eingebaute Töne (Gong tief, Gong mittel, Gong hell, Klangschale, Aufstieg, Abstieg, Doppelton) oder die macOS-Systemtöne.
-
-| Ereignis | Standard |
-|---|---|
-| Arbeit | Gong tief |
-| Pause | Klangschale |
-| Nachbearbeitung | Gong mittel |
-| Ende | Aufstieg |
+Die Restzeit steht in der Menüleiste (`A 12:34`). Die Töne sind je Ereignis wählbar (eingebaute Gongs und Klangschale oder macOS-Systemtöne).
 
 ## Installation
 
