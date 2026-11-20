@@ -2,7 +2,7 @@ import AVFoundation
 import SwiftUI
 
 enum TBSound {
-    /// Eigener, im Programm enthaltener Ton (bei "Ende": Applaus)
+    /// Eigener, im Programm enthaltener Ton (bei "Ende": Gong)
     static let builtIn = "Timeboxer"
     /// Dateinamen in /System/Library/Sounds (in den Systemeinstellungen teils anders benannt, z. B. Glass = Crystal)
     static let system = [
@@ -29,7 +29,7 @@ enum TBSlot: String, CaseIterable {
         case .work: return "work"
         case .rest: return "rest"
         case .post: return "post"
-        case .end: return "applause"
+        case .end: return "gong"
         }
     }
 }

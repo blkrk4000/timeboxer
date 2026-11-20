@@ -16,7 +16,7 @@ private struct SoundRow: View {
             Text(slot.label)
             Spacer()
             Picker("", selection: $selection) {
-                Text(slot == .end ? "Applaus (Timeboxer)" : "Timeboxer").tag(TBSound.builtIn)
+                Text(slot == .end ? "Gong (Timeboxer)" : "Timeboxer").tag(TBSound.builtIn)
                 ForEach(TBSound.system, id: \.self) { name in
                     Text(name).tag(name)
                 }

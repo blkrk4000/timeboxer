@@ -2,6 +2,8 @@
 
 Menubar-Timer für macOS mit frei definierbaren Abschnitten (Timebox-Sequenzen).
 
+Entstanden für die Arbeitseinheiten (AE) nach Anna Höcker, „Heute fange ich wirklich an!“ (Timeboxing mit Arbeit, Pause und Nachbearbeitung).
+
 Basis: [TomatoBar](https://github.com/ivoronin/TomatoBar) von Ilya Voronin (MIT).
 
 ## Sequenz
@@ -16,8 +18,10 @@ Eine Sequenz ist eine Liste aus `<Minuten><Typ>`:
 
 Beispiele: `15A 5P 15A 5N`, `18A 5P 15A 5N`, `40A 3N`. Trenner sind Leerzeichen, Komma, `+` oder `-`.
 
-Pro Abschnitt gibt es einen Ton (eigene Töne oder macOS-Systemtöne, in den Einstellungen wählbar) und eine Benachrichtigung am Anfang, am Ende der ganzen Sequenz einen Ton, standardmäßig Applaus.
+Pro Abschnitt gibt es einen Ton (eigene Töne oder macOS-Systemtöne, in den Einstellungen wählbar) und eine Benachrichtigung am Anfang, am Ende der ganzen Sequenz einen Ton, standardmäßig ein Gong.
 Die Restzeit steht in der Menüleiste (`A 12:34`).
+
+Die eingebauten Töne sind synthetische Platzhalter. Lizenzfreie Samples sind geplant; bis dahin lassen sich die macOS-Systemtöne wählen.
 
 ## Installation
 
